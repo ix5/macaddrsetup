@@ -137,6 +137,16 @@ int main(int argc, char **argv)
                         exit(1);
                 }
 #ifdef BRCMFMAC
+
+                SLOGE("Got WLAN MAC address from TA: %02x:%02x:%02x:%02x:%02x:%02x\n",
+                        buf[5],
+                        buf[4],
+                        buf[3],
+                        buf[2],
+                        buf[1],
+                        buf[0]
+                );
+
                 sockfd = socket(AF_INET, SOCK_DGRAM, 0);
                 if (sockfd < 0) {
                         SLOGE("failed to open socket\n");
@@ -160,7 +170,7 @@ int main(int argc, char **argv)
                         exit(1);
                 }
                 close(sockfd);
-#else
+#else // !BRCMFMAC
                 fpw = fopen(argv[1], "w");
                 if (!fpw) {
                         SLOGE("failed to open %s for writing: %s\n",
@@ -172,22 +182,22 @@ int main(int argc, char **argv)
 #ifdef MIRROR_MAC_ADDRESS
                 ret = fprintf(fpw, "Intf0MacAddress=%02X%02X%02X%02X%02X%02X\nEND\n",
                               buf[0], buf[1], buf[2], buf[3], buf[4], buf[5]);
-#else
+#else // !MIRROR_MAC_ADDRESS
                 ret = fprintf(fpw, "Intf0MacAddress=%02X%02X%02X%02X%02X%02X\nEND\n",
                               buf[5], buf[4], buf[3], buf[2], buf[1], buf[0]);
-#endif
+#endif // MIRROR_MAC_ADDRESS
                 if (ret != 33) {
-#else
+#else // !QCA_CLD3_WIFI
                 ret = fprintf(fpw, "%02x:%02x:%02x:%02x:%02x:%02x\n",
                               buf[5], buf[4], buf[3], buf[2], buf[1], buf[0]);
                 if (ret != 18) {
-#endif
+#endif // QCA_CLD3_WIFI
                         SLOGE("failed to write WLAN mac address\n");
                         ta_close();
                         fclose(fpw);
                         exit(1);
                 }
-#endif
+#endif // !BRCMFMAC
         }
         ta_close();
         fclose(fpb);
